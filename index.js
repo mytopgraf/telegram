@@ -13,6 +13,9 @@ module.exports = async function (context) {
     const botToken = context.env.BOT_TOKEN;
     const chatId = context.env.CHAT_ID;
 
+    console.log("BOT_TOKEN:", botToken);  // 🔹 Проверяем токен
+    console.log("CHAT_ID:", chatId);      // 🔹 Проверяем ID чата
+
     const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
 
     const response = await fetch(url, {
@@ -25,6 +28,7 @@ module.exports = async function (context) {
     });
 
     const data = await response.json();
+    console.log("Ответ от Telegram API:", data); // 🔹 Логируем ответ от Telegram
 
     if (!data.ok) {
       return {
@@ -38,6 +42,7 @@ module.exports = async function (context) {
       json: { success: true, data }
     };
   } catch (error) {
+    console.error("Ошибка:", error); // 🔹 Логируем ошибку
     return {
       status: 500,
       json: { success: false, error: error.message }
