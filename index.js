@@ -1,15 +1,15 @@
-const sdk = require("node-appwrite");
-const axios = require("axios");
+import { Client } from "node-appwrite";
+import axios from "axios";
 
-module.exports = async function (req, res) {
-    const payload = JSON.parse(req.payload); // Получаем данные от клиента
+export default async function (req, res) {
+    const payload = JSON.parse(req.payload || "{}");
     const message = payload.message || "Привет из Appwrite!";
 
-    // Токен и чат ID из переменных окружения
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     const chatId = process.env.TELEGRAM_CHAT_ID;
-    
+
     if (!botToken || !chatId) {
+        console.error("❌ Ошибка: Нет токена или Chat ID");
         return res.json({ error: "Missing Telegram credentials" }, 400);
     }
 
@@ -20,8 +20,10 @@ module.exports = async function (req, res) {
             text: message,
         });
 
-        return res.json({ success: true, response: response.data });
+        console.log("✅ Telegram ответ:", response.data);
+        return res.json({ success: true, telegramResponse: response.data });
     } catch (error) {
-        return res.json({ error: error.message }, 500);
+        console.error("❌ Ошибка при отправке:", error.response?.data || error.message);
+        return res.json({ error: error.response?.data || error.message }, 500);
     }
-};
+}
