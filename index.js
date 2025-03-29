@@ -1,51 +1,27 @@
-module.exports = async function (context) {
-  try {
-    const body = context.req.body ? JSON.parse(context.req.body) : {};
-    const message = body.message;
+const sdk = require("node-appwrite");
+const axios = require("axios");
 
-    if (!message) {
-      return {
-        status: 400,
-        json: { success: false, error: "Message is required" }
-      };
+module.exports = async function (req, res) {
+    const payload = JSON.parse(req.payload); // Получаем данные от клиента
+    const message = payload.message || "Привет из Appwrite!";
+
+    // Токен и чат ID из переменных окружения
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
+    
+    if (!botToken || !chatId) {
+        return res.json({ error: "Missing Telegram credentials" }, 400);
     }
 
-    const botToken = context.env.BOT_TOKEN;
-    const chatId = context.env.CHAT_ID;
+    try {
+        const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+        const response = await axios.post(url, {
+            chat_id: chatId,
+            text: message,
+        });
 
-    console.log("BOT_TOKEN:", botToken);  // 🔹 Проверяем токен
-    console.log("CHAT_ID:", chatId);      // 🔹 Проверяем ID чата
-
-    const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: message,
-      }),
-    });
-
-    const data = await response.json();
-    console.log("Ответ от Telegram API:", data); // 🔹 Логируем ответ от Telegram
-
-    if (!data.ok) {
-      return {
-        status: 500,
-        json: { success: false, error: data.description }
-      };
+        return res.json({ success: true, response: response.data });
+    } catch (error) {
+        return res.json({ error: error.message }, 500);
     }
-
-    return {
-      status: 200,
-      json: { success: true, data }
-    };
-  } catch (error) {
-    console.error("Ошибка:", error); // 🔹 Логируем ошибку
-    return {
-      status: 500,
-      json: { success: false, error: error.message }
-    };
-  }
 };
