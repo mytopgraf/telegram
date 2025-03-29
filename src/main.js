@@ -1,5 +1,8 @@
-// index.js
-
-module.exports = async function (req, res) {
-    return res.json({ message: "Hello, World!" });
+module.exports = async function (context) {
+    console.log("Function started");
+    
+    return {
+        status: 200,
+        json: { message: "Hello, World!" }
+    };
 };
