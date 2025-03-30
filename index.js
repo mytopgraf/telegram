@@ -17,7 +17,7 @@ export default async function (req, res) {
         const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
         const response = await axios.post(url, {
             chat_id: chatId,
-            text: message,
+            text: req,
         });
 
         console.log("✅ Telegram ответ:", response.data);
